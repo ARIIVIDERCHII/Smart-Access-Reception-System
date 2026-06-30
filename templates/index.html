@@ -39,11 +39,10 @@
         let particles = [];
         
         function draw(p){
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r || 1.5, 0, 2 * Math.PI);
             ctx.fillStyle = p.c || "#B829EA";
-            ctx.fill();
-            ctx.closePath();
+            const s = p.size || 2;
+            // Рисуем квадратик вместо круга для эффекта пиксель-арта
+            ctx.fillRect(p.x - s/2, p.y - s/2, s, s);
         }
 
         const render = () => { 
@@ -60,8 +59,8 @@
         function createFaceParticles(base64Image) {
             const img = new Image();
             img.onload = () => {
-                // Увеличим разрешение для большей четкости
-                const targetW = 160;
+                // Делаем сетку плотнее: 80 пикселей в ширину (сканируем каждый пиксель)
+                const targetW = 80;
                 const ratio = img.height / img.width;
                 const targetH = Math.floor(targetW * ratio);
 
@@ -75,14 +74,14 @@
 
                 let newTargets = [];
                 
-                // Масштаб для вывода на экран (уменьшим немного scale, чтобы влезло)
+                // Scale - это размер одного "пикселя" на экране
                 const scale = Math.min(width / targetW, height / targetH) * 0.85;
                 const offsetX = (width - targetW * scale) / 2;
                 const offsetY = (height - targetH * scale) / 2;
 
-                // Сканируем пиксели с шагом 2, но берем больше пикселей
-                for (let y = 0; y < targetH; y+=2) {
-                    for (let x = 0; x < targetW; x+=2) {
+                // Сканируем каждый пиксель (шаг 1)
+                for (let y = 0; y < targetH; y+=1) {
+                    for (let x = 0; x < targetW; x+=1) {
                         const i = (y * targetW + x) * 4;
                         const r = imgData[i];
                         const g = imgData[i+1];
@@ -90,17 +89,14 @@
 
                         const brightness = (r + g + b) / 3;
                         
-                        // Берем почти все пиксели (кроме совсем черных), 
-                        // это исправит проблему с темным лицом на светлом фоне
-                        if (brightness > 15) {
-                            // Чем ярче пиксель, тем крупнее частица (эффект Halftone)
-                            const particleRadius = 0.5 + (brightness / 255) * 2.0;
-
+                        // Отбрасываем только кромешную тьму
+                        if (brightness > 10) {
                             newTargets.push({
                                 x: x * scale + offsetX,
                                 y: y * scale + offsetY,
                                 color: `rgb(${r},${g},${b})`,
-                                radius: particleRadius
+                                // Размер квадратика чуть меньше сетки (0.9), чтобы была красивая цифровая сетка
+                                size: scale * 0.95 
                             });
                         }
                     }
@@ -117,7 +113,7 @@
                         particles.push({
                             x: width / 2 + (Math.random() - 0.5) * 400,
                             y: height + 200,
-                            r: 1.0,
+                            size: 1.0,
                             c: "#FFF"
                         });
                     }
@@ -129,11 +125,11 @@
                             targets: p,
                             x: target.x,
                             y: target.y,
-                            r: target.radius,
+                            size: target.size,
                             c: target.color,
                             duration: 1500 + Math.random() * 1500,
                             easing: 'easeOutExpo',
-                            delay: Math.random() * 400
+                            delay: Math.random() * 200
                         });
                     } else {
                         anime({
