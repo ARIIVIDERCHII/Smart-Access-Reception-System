@@ -64,9 +64,9 @@
         function createFaceParticles(base64Image) {
             const img = new Image();
             img.onload = () => {
-                // Очень высокое разрешение: 200 пикселей (будет ~50,000 частиц!)
-                // Это даст полноценное фотографическое качество
-                const targetW = 200;
+                // Снижаем разрешение до 75 пикселей для создания огромных 
+                // "квадратных" пикселей в стиле PS1 (как в Metal Gear Solid)
+                const targetW = 75; 
                 const ratio = img.height / img.width;
                 const targetH = Math.floor(targetW * ratio);
 
@@ -78,35 +78,44 @@
                 offCtx.drawImage(img, 0, 0, targetW, targetH);
                 const imgData = offCtx.getImageData(0, 0, targetW, targetH).data;
 
-                // Вычисляем масштаб для экрана
+                // Масштаб для огромных пикселей на экране
                 const scale = Math.min(width / targetW, height / targetH) * 0.85;
                 const offsetX = (width - targetW * scale) / 2;
                 const offsetY = (height - targetH * scale) / 2;
 
-                // Размер отрисовываемого пикселя делаем чуть больше масштаба,
-                // чтобы они перекрывались и формировали СПЛОШНОЙ портрет без дырок.
-                pixelSize = scale + 0.5;
+                pixelSize = scale + 0.5; // Сплошная заливка без зазоров
 
                 let newParticles = [];
 
-                // Сканируем КАЖДЫЙ пиксель изображения
+                // Настройки PS1-фильтра
+                const contrast = 40; // Увеличиваем контраст, чтобы тени были резкими
+                const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+                const colorLevels = 6; // Жесткое ограничение цветов (Постеризация)
+                const step = 255 / (colorLevels - 1);
+
                 for (let y = 0; y < targetH; y+=1) {
                     for (let x = 0; x < targetW; x+=1) {
                         const i = (y * targetW + x) * 4;
-                        const r = imgData[i];
-                        const g = imgData[i+1];
-                        const b = imgData[i+2];
+                        let r = imgData[i];
+                        let g = imgData[i+1];
+                        let b = imgData[i+2];
 
-                        // Берем все цвета, чтобы портрет был полноценным
+                        // 1. Применяем контраст
+                        r = factor * (r - 128) + 128;
+                        g = factor * (g - 128) + 128;
+                        b = factor * (b - 128) + 128;
+
+                        // 2. Ограничиваем цвета (эффект 16-bit графики)
+                        r = Math.round(Math.max(0, Math.min(255, r)) / step) * step;
+                        g = Math.round(Math.max(0, Math.min(255, g)) / step) * step;
+                        b = Math.round(Math.max(0, Math.min(255, b)) / step) * step;
+
                         newParticles.push({
-                            // Начальная позиция (разброс снизу или с краев экрана)
                             x: width / 2 + (Math.random() - 0.5) * width * 1.5,
                             y: height + Math.random() * 800,
-                            // Целевая позиция (где пиксель должен быть в фото)
                             tx: x * scale + offsetX,
                             ty: y * scale + offsetY,
-                            color: `rgb(${r},${g},${b})`,
-                            // Индивидуальная скорость для красивого разлета
+                            color: `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`,
                             speed: 0.04 + Math.random() * 0.06
                         });
                     }
