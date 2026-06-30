@@ -3,28 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Access - Particle Face</title>
+    <title>Smart Access Portal</title>
     <style>
+        :root {
+            --bg-admin: #0d1117;
+            --panel-bg: #161b22;
+            --text-color: #c9d1d9;
+            --border-color: #30363d;
+            --success-color: #238636;
+        }
+
         * { padding: 0; margin: 0; box-sizing: border-box; }
-        body { background-color: black; overflow: hidden; color: white; font-family: sans-serif; }
+        
+        body { 
+            background-color: black; 
+            color: white; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            overflow: hidden; /* Default for face view */
+            transition: background-color 0.5s;
+        }
+
+        /* --- Toggle Button --- */
+        #toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        #toggle-btn:hover {
+            color: white;
+            border-color: white;
+        }
+
+        /* --- Face View --- */
+        #face-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
         canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
         #info { position: absolute; bottom: 50px; width: 100%; text-align: center; z-index: 2; opacity: 0; transition: opacity 1s; }
         h1 { font-size: 3rem; margin-bottom: 10px; letter-spacing: 2px; }
         h2 { font-size: 1.5rem; color: #B829EA; text-transform: uppercase; letter-spacing: 5px; }
         .logo { position: absolute; top: 30px; left: 30px; z-index: 2; font-size: 1.2rem; color: rgba(255,255,255,0.5); font-weight: bold; }
+
+        /* --- Admin View --- */
+        #admin-view {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            background-color: var(--bg-admin);
+            padding: 4rem 2rem 2rem 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: normal; margin: 0; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: rgba(255,255,255,0.02);
+            font-weight: 600;
+            color: #8b949e;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.granted { background-color: rgba(35, 134, 54, 0.2); color: #3fb950; }
+        .badge.denied { background-color: rgba(218, 54, 51, 0.2); color: #ff7b72; }
+        .badge.unknown { background-color: rgba(210, 153, 34, 0.2); color: #d29922; }
+
+        .temp-normal { color: #3fb950; }
+        .temp-high { color: #ff7b72; font-weight: bold; }
+
+        .new-row { animation: highlight 2s ease-out; }
+
+        @keyframes highlight {
+            0% { background-color: rgba(88, 166, 255, 0.2); }
+            100% { background-color: transparent; }
+        }
+        
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--success-color);
+            font-weight: 500;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(35, 134, 54, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(35, 134, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(35, 134, 54, 0); }
+        }
     </style>
 </head>
 <body>
-    <div class="logo">AI ACCESS PORTAL</div>
-    <div id="info">
-        <h1 id="name"></h1>
-        <h2 id="status"></h2>
-    </div>
-    <canvas id="canvas"></canvas>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <button id="toggle-btn" onclick="toggleView()">Dashboard View</button>
+
+    <!-- FACE PORTAL VIEW -->
+    <div id="face-view">
+        <div class="logo">AI ACCESS PORTAL</div>
+        <div id="info">
+            <h1 id="name"></h1>
+            <h2 id="status"></h2>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <!-- ADMIN DASHBOARD VIEW -->
+    <div id="admin-view">
+        <div class="header">
+            <h1>Smart Access Analytics</h1>
+            <div class="live-indicator">
+                <div class="dot"></div>
+                LIVE FEED
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Identity</th>
+                    <th>Role</th>
+                    <th>Temp (°C)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="logs-body">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
+        // --- UI Logic ---
+        let currentView = 'face'; // 'face' or 'admin'
+        
+        function toggleView() {
+            const faceView = document.getElementById('face-view');
+            const adminView = document.getElementById('admin-view');
+            const btn = document.getElementById('toggle-btn');
+            
+            if (currentView === 'face') {
+                currentView = 'admin';
+                faceView.style.display = 'none';
+                adminView.style.display = 'block';
+                document.body.style.backgroundColor = 'var(--bg-admin)';
+                document.body.style.overflow = 'auto';
+                btn.innerText = 'Scanner View';
+            } else {
+                currentView = 'face';
+                faceView.style.display = 'block';
+                adminView.style.display = 'none';
+                document.body.style.backgroundColor = 'black';
+                document.body.style.overflow = 'hidden';
+                btn.innerText = 'Dashboard View';
+            }
+        }
+
+        // --- Socket.IO Connection ---
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Подключено к серверу');
+        });
+
+        // --- Admin Dashboard Logic ---
+        const tbody = document.getElementById('logs-body');
+
+        function createRowHTML(log) {
+            const isGranted = log.access_granted;
+            const isIntruder = log.status === 'Intruder';
+            
+            let badgeClass = isGranted ? 'granted' : 'denied';
+            let badgeText = isGranted ? 'ACCESS GRANTED' : 'ACCESS DENIED';
+            if (isIntruder) {
+                badgeClass = 'unknown';
+                badgeText = 'INTRUDER DETECTED';
+            }
+
+            let tempHTML = '-';
+            if (log.temperature) {
+                const tempClass = log.temperature > 37.5 ? 'temp-high' : 'temp-normal';
+                tempHTML = `<span class="${tempClass}">${log.temperature} °C</span>`;
+            }
+
+            return `
+                <td>${log.timestamp}</td>
+                <td style="font-weight: 500; color: #fff;">${log.name}</td>
+                <td style="color: #8b949e;">${log.status}</td>
+                <td>${tempHTML}</td>
+                <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+            `;
+        }
+
+        fetch('/api/logs')
+            .then(res => res.json())
+            .then(logs => {
+                tbody.innerHTML = '';
+                logs.forEach(log => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = createRowHTML(log);
+                    tbody.appendChild(tr);
+                });
+            });
+
+        socket.on('new_log', function(log) {
+            const tr = document.createElement('tr');
+            tr.className = 'new-row';
+            tr.innerHTML = createRowHTML(log);
+            tbody.insertBefore(tr, tbody.firstChild);
+            if (tbody.children.length > 100) {
+                tbody.removeChild(tbody.lastChild);
+            }
+        });
+
+        // --- Face Portal Logic ---
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext("2d");
         const infoDiv = document.getElementById('info');
@@ -37,35 +290,26 @@
         canvas.height = height;
 
         let particles = [];
-        let pixelSize = 2; // Будет вычисляться динамически
+        let pixelSize = 2;
 
         const render = () => { 
-            // Полупрозрачный фон для эффекта шлейфа в движении
             ctx.fillStyle = "rgba(0,0,0,0.3)";
             ctx.fillRect(0, 0, width, height);
             
-            // Отрисовка плотной сетки частиц
             for(let i = 0; i < particles.length; i++) {
                 let p = particles[i];
-                
-                // Плавное приближение к целевой точке (easing)
                 p.x += (p.tx - p.x) * p.speed;
                 p.y += (p.ty - p.y) * p.speed;
-                
                 ctx.fillStyle = p.color;
-                // Рисуем квадрат размером чуть больше шага сетки, чтобы не было дырок
                 ctx.fillRect(p.x, p.y, pixelSize, pixelSize);
             }
             requestAnimationFrame(render);
         }
-        
         render();
 
         function createFaceParticles(base64Image) {
             const img = new Image();
             img.onload = () => {
-                // Снижаем разрешение до 75 пикселей для создания огромных 
-                // "квадратных" пикселей в стиле PS1 (как в Metal Gear Solid)
                 const targetW = 75; 
                 const ratio = img.height / img.width;
                 const targetH = Math.floor(targetW * ratio);
@@ -78,19 +322,16 @@
                 offCtx.drawImage(img, 0, 0, targetW, targetH);
                 const imgData = offCtx.getImageData(0, 0, targetW, targetH).data;
 
-                // Масштаб для огромных пикселей на экране
                 const scale = Math.min(width / targetW, height / targetH) * 0.85;
                 const offsetX = (width - targetW * scale) / 2;
                 const offsetY = (height - targetH * scale) / 2;
 
-                pixelSize = scale + 0.5; // Сплошная заливка без зазоров
+                pixelSize = scale + 0.5;
 
                 let newParticles = [];
-
-                // Настройки PS1-фильтра
-                const contrast = 40; // Увеличиваем контраст, чтобы тени были резкими
+                const contrast = 40;
                 const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-                const colorLevels = 6; // Жесткое ограничение цветов (Постеризация)
+                const colorLevels = 6;
                 const step = 255 / (colorLevels - 1);
 
                 for (let y = 0; y < targetH; y+=1) {
@@ -100,12 +341,10 @@
                         let g = imgData[i+1];
                         let b = imgData[i+2];
 
-                        // 1. Применяем контраст
                         r = factor * (r - 128) + 128;
                         g = factor * (g - 128) + 128;
                         b = factor * (b - 128) + 128;
 
-                        // 2. Ограничиваем цвета (эффект 16-bit графики)
                         r = Math.round(Math.max(0, Math.min(255, r)) / step) * step;
                         g = Math.round(Math.max(0, Math.min(255, g)) / step) * step;
                         b = Math.round(Math.max(0, Math.min(255, b)) / step) * step;
@@ -120,33 +359,24 @@
                         });
                     }
                 }
-                
-                // Перемешиваем, чтобы они собирались хаотично, как пыль
                 newParticles.sort(() => Math.random() - 0.5);
                 particles = newParticles;
             };
             img.src = base64Image;
         }
 
-        // Инициализация WebSockets
-        const socket = io();
-
-        socket.on('connect', () => {
-            console.log('Подключено к серверу');
-        });
-
         socket.on('face_recognized', function(data) {
             console.log("Получено лицо:", data.name);
-            
-            // Обновляем текст
             nameEl.innerText = data.name;
             statusEl.innerText = data.status;
             infoDiv.style.opacity = 1;
-
-            // Запускаем сборку лица из частиц
             createFaceParticles(data.image);
+            
+            // Если мы сейчас на админке, можно даже подсказать
+            if (currentView === 'admin') {
+                console.log("Распознано лицо, переключитесь на Scanner View чтобы увидеть анимацию!");
+            }
 
-            // Прячем текст через некоторое время
             setTimeout(() => {
                 infoDiv.style.opacity = 0;
             }, 8000);
