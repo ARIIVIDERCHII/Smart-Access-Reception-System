@@ -1,0 +1,5 @@
+cmake
+opencv-python
+face-recognition
+numpy
+pyttsx3
