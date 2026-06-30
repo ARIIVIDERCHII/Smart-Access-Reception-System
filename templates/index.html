@@ -7,6 +7,7 @@
     <style>
         :root {
             --bg-admin: #0d1117;
+            --bg-map: #090c10;
             --panel-bg: #161b22;
             --text-color: #c9d1d9;
             --border-color: #30363d;
@@ -19,41 +20,51 @@
             background-color: black; 
             color: white; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            overflow: hidden; /* Default for face view */
+            overflow: hidden; 
             transition: background-color 0.5s;
         }
 
-        /* --- Toggle Button --- */
-        #toggle-btn {
+        /* --- Navigation Buttons --- */
+        #nav-container {
             position: absolute;
             top: 20px;
             right: 20px;
             z-index: 100;
-            background: transparent;
-            color: rgba(255,255,255,0.5);
-            border: 1px solid rgba(255,255,255,0.3);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            background: rgba(0,0,0,0.5);
+            color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
             padding: 8px 16px;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: all 0.3s;
         }
-        #toggle-btn:hover {
+        
+        .nav-btn.active {
             color: white;
-            border-color: white;
+            border-color: var(--success-color);
+            background: rgba(35, 134, 54, 0.2);
+        }
+
+        .nav-btn:hover { color: white; border-color: white; }
+
+        /* --- VIEWS --- */
+        .view {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
         }
 
         /* --- Face View --- */
-        #face-view {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
+        #face-view { z-index: 1; display: block; }
         canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
         #info { position: absolute; bottom: 50px; width: 100%; text-align: center; z-index: 2; opacity: 0; transition: opacity 1s; }
         h1 { font-size: 3rem; margin-bottom: 10px; letter-spacing: 2px; }
@@ -62,104 +73,104 @@
 
         /* --- Admin View --- */
         #admin-view {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             z-index: 10;
             background-color: var(--bg-admin);
-            padding: 4rem 2rem 2rem 2rem;
+            padding: 5rem 2rem 2rem 2rem;
             overflow-y: auto;
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 1rem;
-        }
-
-        .header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: normal; margin: 0; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        th, td {
-            padding: 12px 16px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: rgba(255,255,255,0.02);
-            font-weight: 600;
-            color: #8b949e;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-        }
-
-        tr:last-child td { border-bottom: none; }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 2rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; }
+        .header h1 { font-size: 1.5rem; font-weight: 600; margin: 0; }
+        table { width: 100%; border-collapse: collapse; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: rgba(255,255,255,0.02); color: #8b949e; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+        .badge { padding: 4px 8px; border-radius: 2rem; font-size: 0.75rem; font-weight: 600; }
         .badge.granted { background-color: rgba(35, 134, 54, 0.2); color: #3fb950; }
         .badge.denied { background-color: rgba(218, 54, 51, 0.2); color: #ff7b72; }
         .badge.unknown { background-color: rgba(210, 153, 34, 0.2); color: #d29922; }
+        .action-type { font-weight: bold; font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); margin-right: 10px; }
+        .action-type.entry { color: #58a6ff; }
+        .action-type.exit { color: #d29922; }
 
-        .temp-normal { color: #3fb950; }
-        .temp-high { color: #ff7b72; font-weight: bold; }
-
-        .new-row { animation: highlight 2s ease-out; }
-
-        @keyframes highlight {
-            0% { background-color: rgba(88, 166, 255, 0.2); }
-            100% { background-color: transparent; }
+        /* --- Map View --- */
+        #map-view {
+            z-index: 5;
+            background-color: var(--bg-map);
+            display: none;
         }
         
-        .live-indicator {
+        .map-container {
             display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: var(--success-color);
-            font-weight: 500;
+            position: relative;
+            padding-top: 5rem;
+            border-right: 1px solid rgba(255,255,255,0.1);
         }
-        .dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--success-color);
+        
+        .zone h1 {
+            font-size: 2.5rem;
+            color: rgba(255,255,255,0.2);
+            text-transform: uppercase;
+            letter-spacing: 10px;
+        }
+
+        .zone#home-zone { background: radial-gradient(circle at center, #161b22 0%, #090c10 100%); }
+        .zone#institute-zone { background: radial-gradient(circle at center, #0d1e36 0%, #090c10 100%); }
+        
+        /* Avatars */
+        #avatars-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .avatar {
+            position: absolute;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            animation: pulse 1.5s infinite;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid #58a6ff;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            transition: all 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Обалденная анимация прыжка */
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
         }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(35, 134, 54, 0.7); }
-            70% { box-shadow: 0 0 0 6px rgba(35, 134, 54, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(35, 134, 54, 0); }
+        
+        .avatar span {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.8rem;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <button id="toggle-btn" onclick="toggleView()">Dashboard View</button>
+    <div id="nav-container">
+        <button class="nav-btn active" onclick="switchView('face')" id="btn-face">Scanner</button>
+        <button class="nav-btn" onclick="switchView('map')" id="btn-map">Campus Map</button>
+        <button class="nav-btn" onclick="switchView('admin')" id="btn-admin">Analytics</button>
+    </div>
 
     <!-- FACE PORTAL VIEW -->
-    <div id="face-view">
+    <div id="face-view" class="view">
         <div class="logo">AI ACCESS PORTAL</div>
         <div id="info">
             <h1 id="name"></h1>
@@ -168,27 +179,35 @@
         <canvas id="canvas"></canvas>
     </div>
 
+    <!-- MAP VIEW -->
+    <div id="map-view" class="view">
+        <div class="map-container">
+            <div class="zone" id="home-zone">
+                <h1>🏠 HOME</h1>
+            </div>
+            <div class="zone" id="institute-zone">
+                <h1>🏫 INSTITUTE</h1>
+            </div>
+        </div>
+        <div id="avatars-layer"></div>
+    </div>
+
     <!-- ADMIN DASHBOARD VIEW -->
-    <div id="admin-view">
+    <div id="admin-view" class="view">
         <div class="header">
             <h1>Smart Access Analytics</h1>
-            <div class="live-indicator">
-                <div class="dot"></div>
-                LIVE FEED
-            </div>
         </div>
         <table>
             <thead>
                 <tr>
                     <th>Time</th>
+                    <th>Action</th>
                     <th>Identity</th>
-                    <th>Role</th>
                     <th>Temp (°C)</th>
                     <th>Status</th>
                 </tr>
             </thead>
             <tbody id="logs-body">
-                <!-- Data will be loaded here -->
             </tbody>
         </table>
     </div>
@@ -196,27 +215,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
         // --- UI Logic ---
-        let currentView = 'face'; // 'face' or 'admin'
-        
-        function toggleView() {
-            const faceView = document.getElementById('face-view');
-            const adminView = document.getElementById('admin-view');
-            const btn = document.getElementById('toggle-btn');
+        function switchView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             
-            if (currentView === 'face') {
-                currentView = 'admin';
-                faceView.style.display = 'none';
-                adminView.style.display = 'block';
+            document.getElementById(viewName + '-view').style.display = 'block';
+            document.getElementById('btn-' + viewName).classList.add('active');
+
+            if (viewName === 'admin') {
                 document.body.style.backgroundColor = 'var(--bg-admin)';
                 document.body.style.overflow = 'auto';
-                btn.innerText = 'Scanner View';
+            } else if (viewName === 'map') {
+                document.body.style.backgroundColor = 'var(--bg-map)';
+                document.body.style.overflow = 'hidden';
             } else {
-                currentView = 'face';
-                faceView.style.display = 'block';
-                adminView.style.display = 'none';
                 document.body.style.backgroundColor = 'black';
                 document.body.style.overflow = 'hidden';
-                btn.innerText = 'Dashboard View';
             }
         }
 
@@ -225,6 +239,54 @@
 
         socket.on('connect', () => {
             console.log('Подключено к серверу');
+            // Запрашиваем состояние карты (кто где)
+            socket.emit('request_map_state');
+        });
+
+        // --- Campus Map Logic ---
+        const avatarsLayer = document.getElementById('avatars-layer');
+        const userNodes = {}; // Храним DOM-элементы аватарок
+        
+        function getZoneCenter(zoneName, index, total) {
+            // zoneName = 'HOME' or 'INSTITUTE'
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            
+            const baseX = zoneName === 'HOME' ? w * 0.25 : w * 0.75;
+            const baseY = h * 0.5;
+            
+            // Расставляем аватарки по сетке/кругу, если их много
+            const angle = (index / (total || 1)) * Math.PI * 2;
+            const radius = total > 1 ? 120 : 0;
+            
+            return {
+                x: baseX + Math.cos(angle) * radius,
+                y: baseY + Math.sin(angle) * radius
+            };
+        }
+
+        socket.on('map_state', function(users) {
+            avatarsLayer.innerHTML = '';
+            
+            const homeUsers = users.filter(u => u.location === 'HOME');
+            const instUsers = users.filter(u => u.location === 'INSTITUTE');
+
+            users.forEach(user => {
+                const el = document.createElement('div');
+                el.className = 'avatar';
+                if (user.image) el.style.backgroundImage = `url(${user.image})`;
+                el.innerHTML = `<span>${user.name}</span>`;
+                
+                const group = user.location === 'HOME' ? homeUsers : instUsers;
+                const idx = group.indexOf(user);
+                
+                const pos = getZoneCenter(user.location, idx, group.length);
+                el.style.left = pos.x + 'px';
+                el.style.top = pos.y + 'px';
+                
+                avatarsLayer.appendChild(el);
+                userNodes[user.name] = el;
+            });
         });
 
         // --- Admin Dashboard Logic ---
@@ -232,49 +294,41 @@
 
         function createRowHTML(log) {
             const isGranted = log.access_granted;
-            const isIntruder = log.status === 'Intruder';
             
             let badgeClass = isGranted ? 'granted' : 'denied';
-            let badgeText = isGranted ? 'ACCESS GRANTED' : 'ACCESS DENIED';
-            if (isIntruder) {
+            let badgeText = isGranted ? 'ACCESS GRANTED' : 'DENIED';
+            if (log.action_type === 'INTRUDER') {
                 badgeClass = 'unknown';
-                badgeText = 'INTRUDER DETECTED';
+                badgeText = 'INTRUDER';
             }
 
-            let tempHTML = '-';
-            if (log.temperature) {
-                const tempClass = log.temperature > 37.5 ? 'temp-high' : 'temp-normal';
-                tempHTML = `<span class="${tempClass}">${log.temperature} °C</span>`;
-            }
+            let actionClass = log.action_type === 'ENTRY' ? 'entry' : 'exit';
+            let actionText = log.action_type || 'SYSTEM';
 
             return `
                 <td>${log.timestamp}</td>
+                <td><span class="action-type ${actionClass}">${actionText}</span></td>
                 <td style="font-weight: 500; color: #fff;">${log.name}</td>
-                <td style="color: #8b949e;">${log.status}</td>
-                <td>${tempHTML}</td>
+                <td>${log.temperature ? log.temperature + ' °C' : '-'}</td>
                 <td><span class="badge ${badgeClass}">${badgeText}</span></td>
             `;
         }
 
-        fetch('/api/logs')
-            .then(res => res.json())
-            .then(logs => {
-                tbody.innerHTML = '';
-                logs.forEach(log => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = createRowHTML(log);
-                    tbody.appendChild(tr);
-                });
+        fetch('/api/logs').then(res => res.json()).then(logs => {
+            tbody.innerHTML = '';
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = createRowHTML(log);
+                tbody.appendChild(tr);
             });
+        });
 
         socket.on('new_log', function(log) {
             const tr = document.createElement('tr');
             tr.className = 'new-row';
             tr.innerHTML = createRowHTML(log);
             tbody.insertBefore(tr, tbody.firstChild);
-            if (tbody.children.length > 100) {
-                tbody.removeChild(tbody.lastChild);
-            }
+            if (tbody.children.length > 100) tbody.removeChild(tbody.lastChild);
         });
 
         // --- Face Portal Logic ---
@@ -318,7 +372,6 @@
                 offCanvas.width = targetW;
                 offCanvas.height = targetH;
                 const offCtx = offCanvas.getContext('2d');
-                
                 offCtx.drawImage(img, 0, 0, targetW, targetH);
                 const imgData = offCtx.getImageData(0, 0, targetW, targetH).data;
 
@@ -331,8 +384,7 @@
                 let newParticles = [];
                 const contrast = 40;
                 const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-                const colorLevels = 6;
-                const step = 255 / (colorLevels - 1);
+                const step = 255 / 5;
 
                 for (let y = 0; y < targetH; y+=1) {
                     for (let x = 0; x < targetW; x+=1) {
@@ -366,20 +418,25 @@
         }
 
         socket.on('face_recognized', function(data) {
-            console.log("Получено лицо:", data.name);
-            nameEl.innerText = data.name;
+            // Логика для Face View
+            nameEl.innerText = data.name + (data.action_type === 'ENTRY' ? " [ARRIVED]" : " [LEFT]");
             statusEl.innerText = data.status;
             infoDiv.style.opacity = 1;
             createFaceParticles(data.image);
             
-            // Если мы сейчас на админке, можно даже подсказать
-            if (currentView === 'admin') {
-                console.log("Распознано лицо, переключитесь на Scanner View чтобы увидеть анимацию!");
+            // Логика для Map View (анимация перелета)
+            if (userNodes[data.name]) {
+                const node = userNodes[data.name];
+                // Обновляем фото на всякий случай
+                node.style.backgroundImage = `url(${data.image})`;
+                
+                // Рассчитываем новую позицию
+                const pos = getZoneCenter(data.location, 0, 1); 
+                node.style.left = pos.x + 'px';
+                node.style.top = pos.y + 'px';
             }
 
-            setTimeout(() => {
-                infoDiv.style.opacity = 0;
-            }, 8000);
+            setTimeout(() => { infoDiv.style.opacity = 0; }, 8000);
         });
 
         window.addEventListener('resize', () => {
@@ -387,6 +444,8 @@
             height = window.innerHeight;
             canvas.width = width;
             canvas.height = height;
+            // Обновляем позиции карты при ресайзе
+            socket.emit('request_map_state');
         });
     </script>
 </body>
