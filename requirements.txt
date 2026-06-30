@@ -3,3 +3,6 @@ opencv-python
 face-recognition
 numpy
 pyttsx3
+flask
+flask-socketio
+eventlet

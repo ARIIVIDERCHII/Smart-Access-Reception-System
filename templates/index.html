@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Access - Particle Face</title>
+    <style>
+        * { padding: 0; margin: 0; box-sizing: border-box; }
+        body { background-color: black; overflow: hidden; color: white; font-family: sans-serif; }
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
+        #info { position: absolute; bottom: 50px; width: 100%; text-align: center; z-index: 2; opacity: 0; transition: opacity 1s; }
+        h1 { font-size: 3rem; margin-bottom: 10px; letter-spacing: 2px; }
+        h2 { font-size: 1.5rem; color: #B829EA; text-transform: uppercase; letter-spacing: 5px; }
+        .logo { position: absolute; top: 30px; left: 30px; z-index: 2; font-size: 1.2rem; color: rgba(255,255,255,0.5); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="logo">AI ACCESS PORTAL</div>
+    <div id="info">
+        <h1 id="name"></h1>
+        <h2 id="status"></h2>
+    </div>
+    <canvas id="canvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext("2d");
+        const infoDiv = document.getElementById('info');
+        const nameEl = document.getElementById('name');
+        const statusEl = document.getElementById('status');
+
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        let particles = [];
+        
+        function draw(p){
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r || 1.5, 0, 2 * Math.PI);
+            ctx.fillStyle = p.c || "#B829EA";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        const render = () => { 
+            // Эффект плавного затухания шлейфа
+            ctx.fillStyle = "rgba(0,0,0,0.15)";
+            ctx.fillRect(0, 0, width, height);
+            
+            for(let i = 0; i < particles.length; i++) draw(particles[i]);
+            requestAnimationFrame(render);
+        }
+        
+        render();
+
+        function createFaceParticles(base64Image) {
+            const img = new Image();
+            img.onload = () => {
+                // Увеличим разрешение для большей четкости
+                const targetW = 160;
+                const ratio = img.height / img.width;
+                const targetH = Math.floor(targetW * ratio);
+
+                const offCanvas = document.createElement('canvas');
+                offCanvas.width = targetW;
+                offCanvas.height = targetH;
+                const offCtx = offCanvas.getContext('2d');
+                
+                offCtx.drawImage(img, 0, 0, targetW, targetH);
+                const imgData = offCtx.getImageData(0, 0, targetW, targetH).data;
+
+                let newTargets = [];
+                
+                // Масштаб для вывода на экран (уменьшим немного scale, чтобы влезло)
+                const scale = Math.min(width / targetW, height / targetH) * 0.85;
+                const offsetX = (width - targetW * scale) / 2;
+                const offsetY = (height - targetH * scale) / 2;
+
+                // Сканируем пиксели с шагом 2, но берем больше пикселей
+                for (let y = 0; y < targetH; y+=2) {
+                    for (let x = 0; x < targetW; x+=2) {
+                        const i = (y * targetW + x) * 4;
+                        const r = imgData[i];
+                        const g = imgData[i+1];
+                        const b = imgData[i+2];
+
+                        const brightness = (r + g + b) / 3;
+                        
+                        // Берем почти все пиксели (кроме совсем черных), 
+                        // это исправит проблему с темным лицом на светлом фоне
+                        if (brightness > 15) {
+                            // Чем ярче пиксель, тем крупнее частица (эффект Halftone)
+                            const particleRadius = 0.5 + (brightness / 255) * 2.0;
+
+                            newTargets.push({
+                                x: x * scale + offsetX,
+                                y: y * scale + offsetY,
+                                color: `rgb(${r},${g},${b})`,
+                                radius: particleRadius
+                            });
+                        }
+                    }
+                }
+                
+                newTargets.sort(() => Math.random() - 0.5);
+
+                const count = Math.max(particles.length, newTargets.length);
+
+                for (let i = 0; i < count; i++) {
+                    const target = newTargets[i];
+                    
+                    if (!particles[i]) {
+                        particles.push({
+                            x: width / 2 + (Math.random() - 0.5) * 400,
+                            y: height + 200,
+                            r: 1.0,
+                            c: "#FFF"
+                        });
+                    }
+
+                    const p = particles[i];
+
+                    if (target) {
+                        anime({
+                            targets: p,
+                            x: target.x,
+                            y: target.y,
+                            r: target.radius,
+                            c: target.color,
+                            duration: 1500 + Math.random() * 1500,
+                            easing: 'easeOutExpo',
+                            delay: Math.random() * 400
+                        });
+                    } else {
+                        anime({
+                            targets: p,
+                            x: width / 2 + (Math.random() - 0.5) * width,
+                            y: height + 200,
+                            duration: 1500,
+                            easing: 'easeInExpo'
+                        });
+                    }
+                }
+            };
+            img.src = base64Image;
+        }
+
+        // Инициализация WebSockets
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Подключено к серверу');
+        });
+
+        socket.on('face_recognized', function(data) {
+            console.log("Получено лицо:", data.name);
+            
+            // Обновляем текст
+            nameEl.innerText = data.name;
+            statusEl.innerText = data.status;
+            infoDiv.style.opacity = 1;
+
+            // Запускаем сборку лица из частиц
+            createFaceParticles(data.image);
+
+            // Прячем текст через некоторое время
+            setTimeout(() => {
+                infoDiv.style.opacity = 0;
+            }, 8000);
+        });
+
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        });
+    </script>
+</body>
+</html>
