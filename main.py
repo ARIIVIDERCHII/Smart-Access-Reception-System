@@ -77,18 +77,56 @@ def speak(text):
     engine.say(text)
     engine.runAndWait()
 
+# --- Настройки аппаратного обеспечения (Raspberry Pi) ---
+HARDWARE_AVAILABLE = False
+try:
+    import RPi.GPIO as GPIO
+    from smbus2 import SMBus
+    from PyMLX90614 import PyMLX90614
+    HARDWARE_AVAILABLE = True
+    
+    # Настройка пина для Реле (например, GPIO 17)
+    RELAY_PIN = 17
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(RELAY_PIN, GPIO.OUT)
+    GPIO.output(RELAY_PIN, GPIO.LOW) # Изначально выключено
+    
+    # Настройка I2C для датчика температуры
+    bus = SMBus(1)
+    sensor = PyMLX90614(bus, address=0x5A)
+    print("[System] Hardware libraries loaded successfully. Real hardware mode ENABLED.")
+except ImportError:
+    print("[System] Hardware libraries not found (running on Windows?). Simulation mode ENABLED.")
+
 def hardware_open_door():
-    print(" [Hardware] Сигнал на GPIO -> Реле щелкает. Турникет ОТКРЫТ.")
-    eventlet.sleep(5)
-    print(" [Hardware] Сигнал на GPIO -> Реле отключено. Турникет ЗАКРЫТ.")
+    if HARDWARE_AVAILABLE:
+        print(" [Hardware] Сигнал на GPIO 17 -> Реле щелкает. Турникет ОТКРЫТ.")
+        GPIO.output(RELAY_PIN, GPIO.HIGH)
+        eventlet.sleep(5)
+        GPIO.output(RELAY_PIN, GPIO.LOW)
+        print(" [Hardware] Сигнал на GPIO 17 -> Реле отключено. Турникет ЗАКРЫТ.")
+    else:
+        print(" [Simulation] Сигнал на GPIO -> Реле щелкает. Турникет ОТКРЫТ.")
+        eventlet.sleep(5)
+        print(" [Simulation] Сигнал на GPIO -> Реле отключено. Турникет ЗАКРЫТ.")
 
 def hardware_read_temperature():
-    print(" [Hardware] Считывание температуры (MLX90614)...")
-    if random.random() < 0.1:
-        temp = round(random.uniform(37.6, 38.5), 1)
+    if HARDWARE_AVAILABLE:
+        print(" [Hardware] Считывание температуры (MLX90614)...")
+        try:
+            temp = round(sensor.get_object_1(), 1)
+            print(f" [Hardware] Результат: {temp} °C")
+            return temp
+        except Exception as e:
+            print(f" [Hardware] Ошибка чтения датчика: {e}")
+            return 36.6
     else:
-        temp = round(random.uniform(36.1, 37.1), 1)
-    return temp
+        print(" [Simulation] Считывание температуры (MLX90614)...")
+        if random.random() < 0.1:
+            temp = round(random.uniform(37.6, 38.5), 1)
+        else:
+            temp = round(random.uniform(36.1, 37.1), 1)
+        return temp
 
 def send_security_alert(image_b64):
     message = "⚠️ Внимание: Попытка несанкционированного доступа. Неизвестное лицо находилось перед камерой более 3 секунд."
