@@ -12,7 +12,7 @@ An enterprise-grade, edge-based Smart Access Control and Time Attendance system.
   * **Campus Map**: Gamified presence tracker. Avatars dynamically fly between "HOME" and "INSTITUTE" zones upon Entry/Exit.
 * **Time & Attendance Tracking**: Automatically determines if a scan is an `ENTRY` or `EXIT` and logs the timestamp.
 * **Hardware Integration (I2C/GPIO)**: Code is structured to support Relays (for turnstiles/magnetic locks) and MLX90614 Infrared Thermal Scanners (checks for fever before granting access).
-* **Security Webhooks**: Detects unknown intruders (lingering > 3 seconds) and sends a snapshot alert to a Telegram Security Group.
+* **Security Webhooks**: Detects unknown intruders (lingering > 3 seconds) and sends a snapshot alert via LINE Notify.
 * **Voice Assistant (TTS)**: Greets users by name, role, and current time ("Welcome", "Goodbye").
 
 ## 🛠️ Tech Stack
@@ -48,7 +48,7 @@ An enterprise-grade, edge-based Smart Access Control and Time Attendance system.
   * **キャンパスマップ**: ゲーミフィケーション化された出欠トラッカー。入室・退室時にアバターが「HOME」と「INSTITUTE（施設）」ゾーン間をダイナミックに飛び交います。
 * **勤怠トラッキング**: スキャンが「入室（ENTRY）」か「退室（EXIT）」かを自動的に判別し、タイムスタンプを記録。
 * **ハードウェア統合 (I2C/GPIO)**: リレー（改札機や電磁錠用）およびMLX90614赤外線サーマルスキャナ（入室前に発熱をチェック）をサポートする構造。
-* **セキュリティ Webhook**: 未知の侵入者（3秒以上滞在）を検知し、Telegramのセキュリティグループにスナップショット警告を送信。
+* **セキュリティ Webhook**: 未知の侵入者（3秒以上滞在）を検知し、LINE Notify経由でスナップショット警告を送信。
 * **音声アシスタント (TTS)**: ユーザーの名前、役職、現在時刻を音声で読み上げ挨拶（「Welcome」「Goodbye」等）。
 
 ## 🛠️ 技術スタック

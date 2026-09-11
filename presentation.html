@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Access System - Presentation</title>
+    
+    <!-- Reveal.js Base CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    
+    <!-- Google Fonts: Zen Dots (Cyberpunk Japanese), Teko (Futuristic English), Noto Sans JP -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Zen+Dots&family=Teko:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- High-Tech Background --- */
+        body, .reveal-viewport {
+            background-color: #050814 !important;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 242, 254, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(176, 102, 254, 0.15) 0%, transparent 50%) !important;
+            background-attachment: fixed !important;
+            font-family: 'Noto Sans JP', sans-serif;
+            color: #e0e0e0;
+        }
+        
+        .bg-lines {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: 
+                linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+            animation: moveGrid 15s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes moveGrid {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(50px); }
+        }
+
+        /* --- Typography --- */
+        .reveal { font-family: 'Noto Sans JP', sans-serif; color: #fff; z-index: 1; }
+        
+        /* Cyberpunk font for English Headings */
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-family: 'Teko', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        /* Cyberpunk Japanese Title Font */
+        .jp-title {
+            font-family: 'Zen Dots', cursive !important;
+            letter-spacing: 3px;
+        }
+
+        /* --- Glassmorphism Cards --- */
+        .glass-card {
+            background: rgba(10, 15, 30, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 242, 254, 0.05);
+            position: relative;
+        }
+
+        /* --- Text Gradients --- */
+        .text-gradient {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-purple {
+            background: linear-gradient(135deg, #b066fe 0%, #63e2ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-green {
+            background: linear-gradient(135deg, #00f260 0%, #0575e6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-gradient-orange {
+            background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- Icons --- */
+        .icon-circle {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            display: inline-flex; justify-content: center; align-items: center;
+            font-size: 40px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 25px currentColor;
+            border: 2px solid currentColor;
+            background: rgba(0,0,0,0.5);
+            -webkit-text-fill-color: initial !important; 
+        }
+
+        .icon-blue { color: #00f2fe; }
+        .icon-purple { color: #b066fe; }
+        .icon-green { color: #00f260; }
+        .icon-red { color: #ff0844; }
+
+        /* --- Layout --- */
+        .flex-row { display: flex; justify-content: space-between; gap: 30px; margin-top: 30px; }
+        .flex-col { flex: 1; }
+        
+        ul.styled-list { list-style: none; padding: 0; text-align: left; }
+        ul.styled-list li { margin-bottom: 15px; font-size: 0.85em; padding-left: 35px; position: relative; line-height: 1.5; }
+        ul.styled-list li i { position: absolute; left: 0; top: 5px; color: #00f2fe; }
+        ul.styled-list.red li i { color: #ff0844; }
+
+        .tech-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin: 5px;
+            font-size: 0.65em;
+            font-family: 'Teko', sans-serif;
+            font-weight: 500;
+            letter-spacing: 2px;
+        }
+
+        /* --- Irasutoya Images --- */
+        .irasutoya-img {
+            position: absolute;
+            width: 150px;
+            bottom: -30px;
+            right: -30px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+            z-index: 10;
+            transform: rotate(-5deg);
+        }
+        
+        .irasutoya-top-right {
+            top: -40px;
+            bottom: auto;
+            right: -20px;
+            transform: rotate(5deg);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="bg-lines"></div>
+
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Slide 1: Hero -->
+            <section data-speech="皆さん、こんにちは。本日は、エッジAIとIoTを組み合わせた、次世代のスマート入退室管理システムについてご紹介いたします。このシステムが、日々のアクセス管理をどのようにスマートに変えるのか、ぜひご覧ください。">
+                <div class="glass-card" style="padding: 80px 40px;">
+                    <p style="font-family: 'Teko', sans-serif; letter-spacing: 5px; color: #00f2fe; font-size: 1.2em;">NEXT-GEN IOT SYSTEM</p>
+                    <h1 class="text-gradient jp-title" style="font-size: 2.2em; margin: 20px 0; line-height: 1.3;">SMART ACCESS<br>SYSTEM</h1>
+                    <h3 style="font-size: 1.5em; font-family: 'Noto Sans JP', sans-serif; font-weight: 300;">顔認証 <span style="color:#00f2fe;">✕</span> IoT <span style="color:#00f2fe;">✕</span> 勤怠管理</h3>
+                    <p style="margin-top: 50px; font-size: 0.6em; color: rgba(255,255,255,0.4);"><i class="fas fa-keyboard"></i> 音声を再生するにはスペースキーを押してください</p>
+                </div>
+            </section>
+
+            <!-- Slide 2: Problem vs Solution -->
+            <section data-speech="これまでのオフィスや学校では、物理ICカードの紛失や貸し借りのリスク、そして毎日の手動検温によるタイムロスが大きな課題でした。私たちの提案システムは、カメラを見るだけの『完全手ぶら認証』と、非接触センサーによる『自動検温』を組み合わせることで、これらの問題を一気に解決します。">
+                <h2 class="text-gradient-purple" style="font-size: 2.5em;">Concept & Solution</h2>
+                <div class="flex-row">
+                    <div class="glass-card flex-col">
+                        <img class="irasutoya-img irasutoya-top-right" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjo6TAPXK5-X6p_3xshC5QMPU8Z95QWPQkCrMv9w7RLwxWc7ON37GNy46xYZ_yw62vphyphenhyphenAbm2muRXPoi_qyRiTsUM8Mag1F-9i8LQVDOfWmwYrl0veWA-jUQUT8jtuJbDhq335-m-a8jplp/s800/nayamu_girl2.png" alt="Troubled">
+                        <div class="icon-circle icon-red"><i class="fas fa-exclamation-triangle"></i></div>
+                        <h3 class="jp-title" style="color: #ff0844; font-size: 1.5em;">従来の課題</h3>
+                        <ul class="styled-list red">
+                            <li><i class="fas fa-times"></i> 物理ICカードの紛失・貸し借り</li>
+                            <li><i class="fas fa-times"></i> 手動検温によるタイムロス</li>
+                            <li><i class="fas fa-times"></i> 勤怠システムの打刻忘れ</li>
+                        </ul>
+                    </div>
+                    <div class="glass-card flex-col">
+                        <img class="irasutoya-img" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgHc4GS0ZBKvx7-_dKHAhti4t5Yy0Y88AiTa3pLqn4QkyCiLWAXIn3YVlK59AyRNPSbpJGd0_gJ5ALkH_Xa7cFM4T9Bk7x42OQAoiChojmPF1rJH-5HKresXrxsJrYpWlAOqVhowmDoqy8/s800/boy_idea.png" alt="Idea">
+                        <div class="icon-circle icon-blue"><i class="fas fa-lightbulb"></i></div>
+                        <h3 class="jp-title" style="color: #00f2fe; font-size: 1.5em;">提案システム</h3>
+                        <ul class="styled-list">
+                            <li><i class="fas fa-check"></i> カメラを見るだけの<strong>完全手ぶら認証</strong></li>
+                            <li><i class="fas fa-check"></i> 赤外線センサーによる<strong>自動検温</strong></li>
+                            <li><i class="fas fa-check"></i> 入退室状態を<strong>自動で記録・可視化</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 3: Feature 1 -->
+            <section data-speech="まず、コアとなる顔認識技術についてです。Raspberry Pi上で高性能なAIモデルをローカル実行することで、ネットワーク遅延のない瞬時の認証を実現しました。さらに、認証成功時にはレトロなパーティクル・アニメーションが表示され、毎日の入館処理にちょっとした楽しさと近未来感を演出しています。">
+                <div class="glass-card">
+                    <img class="irasutoya-img irasutoya-top-right" style="width: 120px;" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgGeI9TzUyshVZq9iobU3Pig2yQ39O89gVA5EXU7zBQKoiwBliNGzVTHFXolXb4psN0H15B4qoW2olcpHtlcnqSPOhoa-gIonyw15cLqquFEaPsAIbl3bW9DnwS1sjQjYJ3Y0_dQeQdhlzN/s800/camera_kao_ninshiki.png" alt="Face ID">
+                    <div class="icon-circle icon-blue"><i class="fas fa-expand-alt"></i></div>
+                    <h2 class="text-gradient" style="font-size: 2.5em;">1. Edge-AI Face ID</h2>
+                    <p style="font-size: 0.9em; line-height: 1.8; text-align: left; margin-top: 30px;">
+                        高性能な顔認識モデルをRaspberry Pi上でローカル実行。ネットワーク遅延なしで瞬時に個人を特定します。<br><br>
+                        認証成功時には、<span style="color:#00f2fe; font-weight:bold;">PS1風のレトロなパーティクル（粒子）アニメーション</span>で顔が再構築されるUIを採用。毎日の入館処理に「楽しさ」と「近未来感」を演出します。
+                    </p>
+                </div>
+            </section>
+
+            <!-- Slide 4: Feature 2 -->
+            <section data-speech="次にハードウェアとの連携です。ソフトウェアだけでなく、現実世界のデバイスも制御します。顔認証と同時にエムエルエックス・キューゼロロクイチヨン赤外線センサーが体温を測定。37.5度以下の正常体温であることが確認された場合のみ、リレー回路を通じて物理的なゲートを自動でオープンします。">
+                <div class="glass-card">
+                    <img class="irasutoya-img" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgHG-92XMvI1-4DbQ5v5XcqVENK3sroTm8iIFC7IN9J68r3V4OY4itiKWG2bEBV7qEfgRBYRqxhD1gx3Ri3UD_PE-RyBYeh1Z2Hq0QYxcuBDPpMq5DA3iIpN1kknVLFcLSESCu0bsEaViHB/s1003/medical_hisessyoku_sekigaisen_taionkei.png" alt="Thermometer">
+                    <div class="icon-circle icon-purple"><i class="fas fa-thermometer-half"></i></div>
+                    <h2 class="text-gradient-purple" style="font-size: 2.5em;">2. Hardware IoT</h2>
+                    <p style="font-size: 0.9em; line-height: 1.8; text-align: left; margin-top: 30px; padding-right: 80px;">
+                        Raspberry PiのGPIOおよびI2C通信をフル活用し、ソフトウェアと現実空間を接続。<br><br>
+                        顔認証と同時に<span style="color:#b066fe; font-weight:bold;">MLX90614赤外線センサー</span>が非接触で体温を測定。正常体温（37.5℃以下）であることが確認された場合のみ、リレー回路を通じて物理的なゲートをオープンします。
+                    </p>
+                </div>
+            </section>
+
+            <!-- Slide 5: Feature 3 -->
+            <section data-speech="さらに、単なるログ記録にとどまりません。システムはユーザーが入室したか退室したかを自動でトラッキングします。Webダッシュボード上のマップでは、ユーザーのアバターがゾーン間をアニメーションで飛び交い、誰が今どこにいるのかを一目で直感的に把握できるゲーミフィケーション要素を取り入れました。">
+                <div class="glass-card">
+                    <img class="irasutoya-img irasutoya-top-right" style="width: 140px;" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgJa70lbnuP2paN7aManaWTWvISVAb1j3C1b2mXz-H_kLlstiE2rhwDQAT4WSqOZPxrYgZirbjUfFXDDaTPlPfsv6ucMk0untZu7zcH7UEGID4LnOvEOzIUOSTAo_-kvHcl49DnmUPfpqo/s1600/school.png" alt="School">
+                    <div class="icon-circle icon-green"><i class="fas fa-map-marker-alt"></i></div>
+                    <h2 class="text-gradient-green" style="font-size: 2.5em;">3. Campus Map</h2>
+                    <p style="font-size: 0.9em; line-height: 1.8; text-align: left; margin-top: 30px; padding-right: 80px;">
+                        単なるログ記録ではなく、システムがユーザーの「入室」と「退室」状態を自動でトラッキング。<br><br>
+                        Webダッシュボード上のマップで、ユーザーのアバターが「HOME」と「INSTITUTE」のゾーン間を<span style="color:#00f260; font-weight:bold;">物理アニメーションで飛び交う</span>、ゲーミフィケーション要素を取り入れました。
+                    </p>
+                </div>
+            </section>
+
+            <!-- Slide 6: Feature 4 -->
+            <section data-speech="もちろん、セキュリティ対策も万全です。もし未登録の人物がカメラの前に3秒以上とどまった場合、システムは即座に不審者として検知します。その瞬間、顔写真を自動でキャプチャし、管理者のLINEへ写真付きの警告メッセージを瞬時にプッシュ通知します。これにより、迅速な対応が可能となります。">
+                <div class="glass-card">
+                    <img class="irasutoya-img" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhzwzHy5v2JBHlFD-qVP3Fzv4DBZNGJ-zOpzy7BwX11a4xmYLv2q-ZTg279yeoALEYpz7vSNeQOHU2-v_ivRg-xhmR18DE6tavkfdQRAEPCxjXl_RM7TllbWmbG-pfc5u2esg37h5FR9zk/s800/dorobou_hokkamuri.png" alt="Thief">
+                    <div class="icon-circle icon-red"><i class="fas fa-shield-alt"></i></div>
+                    <h2 class="text-gradient-orange" style="font-size: 2.5em;">4. Active Security</h2>
+                    <p style="font-size: 0.9em; line-height: 1.8; text-align: left; margin-top: 30px; padding-right: 80px;">
+                        未登録の人物がカメラの前に3秒以上滞在した場合、システムは即座に「不審者（Intruder）」として検知。<br><br>
+                        顔写真を自動キャプチャし、<span style="color:#00c300; font-weight:bold;">LINE Notify API</span>を通じて管理者グループへ警告メッセージと画像を瞬時にプッシュ通知します。
+                    </p>
+                </div>
+            </section>
+
+            <!-- Slide 7: Tech Stack -->
+            <section data-speech="こちらがシステムを支える技術スタックです。PythonやOpenCV、Flaskなどのソフトウェア技術と、Raspberry Piや各種センサーなどのハードウェアを緊密に連携させています。クラウドに依存しすぎず、エッジ側で処理を行うことで、低コストかつ高レスポンスなシステム構成を実現しました。">
+                <h2 class="text-gradient jp-title" style="font-size: 2.5em;">Technology Stack</h2>
+                <div class="glass-card" style="margin-top: 40px; text-align: center;">
+                    <img class="irasutoya-img" style="width: 140px;" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjhW-EWKoRQKdpR-GQhA3uGitJpJp3_g8DjFAT8jRx09gO3dMAb1rcFxmh4vq2vRCUhDYdUJFlpzOLdGgV60KOqTEo17Uwi9TgTSIRbVtV138GNPaddDkcP1usZqggKc9-DX4Nuhr1XWYTv/s800/computer_programming_man.png" alt="Programmer">
+                    <div>
+                        <p style="font-size: 1.2em; font-family: 'Teko'; color: #00f2fe; margin-bottom: 10px;">SOFTWARE & AI</p>
+                        <span class="tech-badge" style="border-color: #00f2fe;"><i class="fab fa-python"></i> Python 3</span>
+                        <span class="tech-badge" style="border-color: #00f2fe;"><i class="fas fa-eye"></i> OpenCV</span>
+                        <span class="tech-badge" style="border-color: #00f2fe;"><i class="fas fa-server"></i> Flask / Socket.IO</span>
+                        <span class="tech-badge" style="border-color: #00f2fe;"><i class="fas fa-database"></i> SQLite</span>
+                    </div>
+                    <div style="margin-top: 30px;">
+                        <p style="font-size: 1.2em; font-family: 'Teko'; color: #b066fe; margin-bottom: 10px;">HARDWARE & CLOUD</p>
+                        <span class="tech-badge" style="border-color: #b066fe;"><i class="fab fa-raspberry-pi"></i> Raspberry Pi 4</span>
+                        <span class="tech-badge" style="border-color: #b066fe;"><i class="fas fa-temperature-low"></i> MLX90614 (I2C)</span>
+                        <span class="tech-badge" style="border-color: #b066fe;"><i class="fas fa-microchip"></i> 5V Relay (GPIO)</span>
+                        <span class="tech-badge" style="border-color: #00c300;"><i class="fab fa-line"></i> LINE Notify API</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 8: End -->
+            <section data-speech="以上が、私たちが提案するスマートアクセスシステムです。エッジAIとIoTが創り出す、より安全でスマートな空間を、ぜひご体験ください。ご清聴いただき、誠にありがとうございました。">
+                <div class="glass-card">
+                    <div class="icon-circle icon-blue" style="border: none; box-shadow: none;"><i class="fas fa-fingerprint" style="font-size: 60px;"></i></div>
+                    <h2 class="text-gradient jp-title" style="font-size: 3em;">THANK YOU</h2>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 1.2em; font-family: 'Zen Dots', cursive; margin-top: 20px;">エッジAIで創る、スマートな空間</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- FontAwesome Script (fallback) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            transition: 'zoom',
+            backgroundTransition: 'zoom',
+            autoPlayMedia: true,
+            controls: false, 
+            progress: true,  
+        });
+        
+        // --- AI Voiceover (Text-to-Speech) Logic ---
+        let speechEnabled = false;
+
+        function speakText(text) {
+            if (!speechEnabled) return;
+            
+            window.speechSynthesis.cancel(); // Stop any ongoing speech
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP'; // Set language to Japanese
+            utterance.rate = 1.1; // Slightly faster for presentation
+            utterance.pitch = 1.2; // Slightly higher pitch (Zundamon/Yukkuri vibe)
+            
+            // Try to find a high-quality Japanese voice
+            let voices = window.speechSynthesis.getVoices();
+            let jaVoices = voices.filter(v => v.lang.includes('ja'));
+            if (jaVoices.length > 0) {
+                // Prefer Google's Japanese voice if available, otherwise default
+                utterance.voice = jaVoices.find(v => v.name.includes('Google')) || jaVoices[0];
+            }
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Trigger speech when slide changes
+        Reveal.on('slidechanged', event => {
+            let textToSpeak = event.currentSlide.getAttribute('data-speech');
+            if (textToSpeak) {
+                speakText(textToSpeak);
+            }
+        });
+
+        // Trigger speech for the first slide (Browsers block TTS until user interacts)
+        document.addEventListener('keydown', function initAudio(e) {
+            if(e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'Enter') {
+                if (!speechEnabled) {
+                    speechEnabled = true;
+                    // Find current slide
+                    let currentSlide = document.querySelector('section.present');
+                    if(currentSlide && currentSlide.getAttribute('data-speech')) {
+                        speakText(currentSlide.getAttribute('data-speech'));
+                    }
+                }
+            }
+        });
+        
+        // Ensure voices are loaded ahead of time
+        window.speechSynthesis.onvoiceschanged = function() {
+            window.speechSynthesis.getVoices();
+        };
+    </script>
+</body>
+</html>

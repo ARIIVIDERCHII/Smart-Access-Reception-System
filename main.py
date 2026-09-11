@@ -20,8 +20,8 @@ app.config['SECRET_KEY'] = 'smart_access_secret'
 socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins="*")
 
 DB_PATH = 'logs.db'
-TELEGRAM_BOT_TOKEN = ''
-TELEGRAM_CHAT_ID = ''
+# LINE Notify config
+LINE_NOTIFY_TOKEN = ''
 
 # Глобальный словарь для отслеживания состояния (кто где находится)
 # Ключ: name, Значение: 'HOME' или 'INSTITUTE'
@@ -130,17 +130,18 @@ def hardware_read_temperature():
 
 def send_security_alert(image_b64):
     message = "⚠️ Внимание: Попытка несанкционированного доступа. Неизвестное лицо находилось перед камерой более 3 секунд."
-    if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
+    if LINE_NOTIFY_TOKEN:
         try:
-            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
+            url = "https://notify-api.line.me/api/notify"
+            headers = {'Authorization': f'Bearer {LINE_NOTIFY_TOKEN}'}
             image_data = base64.b64decode(image_b64.split(",")[1])
-            files = {'photo': ('alert.jpg', image_data, 'image/jpeg')}
-            data = {'chat_id': TELEGRAM_CHAT_ID, 'caption': message}
-            requests.post(url, files=files, data=data)
+            files = {'imageFile': ('alert.jpg', image_data, 'image/jpeg')}
+            data = {'message': message}
+            requests.post(url, headers=headers, data=data, files=files)
         except Exception as e:
             print(f" [Security Webhook] Ошибка: {e}")
     else:
-        print(" [Security Webhook] (Симуляция) Сообщение отправлено в чат.")
+        print(" [Security Webhook] (Симуляция) Сообщение отправлено в LINE.")
 
 def load_database(db_path="database"):
     known_face_encodings = []
