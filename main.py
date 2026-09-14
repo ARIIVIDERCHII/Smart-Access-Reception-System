@@ -89,7 +89,10 @@ def speak(text):
 HARDWARE_AVAILABLE = False
 try:
     import RPi.GPIO as GPIO
-    from smbus2 import SMBus
+    try:
+        from smbus2 import SMBus
+    except ImportError:
+        from smbus import SMBus
     from PyMLX90614 import PyMLX90614
     HARDWARE_AVAILABLE = True
     
@@ -103,8 +106,10 @@ try:
     bus = SMBus(1)
     sensor = PyMLX90614(bus, address=0x5A)
     print("[System] Hardware libraries loaded successfully. Real hardware mode ENABLED.")
-except ImportError:
-    print("[System] Hardware libraries not found (running on Windows?). Simulation mode ENABLED.")
+except ImportError as e:
+    print(f"[System] Hardware libraries not found: {e}. Simulation mode ENABLED.")
+except Exception as e:
+    print(f"[System] Hardware init error: {e}. Simulation mode ENABLED.")
 
 def hardware_open_door():
     if HARDWARE_AVAILABLE:
