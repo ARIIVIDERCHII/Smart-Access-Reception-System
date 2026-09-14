@@ -69,13 +69,21 @@ def log_access(name, status, temperature, access_granted, action_type="ENTRY"):
 
 init_db()
 
-engine = pyttsx3.init()
-engine.setProperty('rate', 150)
+try:
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 150)
+except Exception:
+    engine = None
+    print("[Voice] pyttsx3 не удалось инициализировать (espeak). Голос отключён.")
 
 def speak(text):
     print(f"[Voice] {text}")
-    engine.say(text)
-    engine.runAndWait()
+    if engine:
+        try:
+            engine.say(text)
+            engine.runAndWait()
+        except Exception:
+            pass
 
 # --- Настройки аппаратного обеспечения (Raspberry Pi) ---
 HARDWARE_AVAILABLE = False
