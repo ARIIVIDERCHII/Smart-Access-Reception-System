@@ -111,6 +111,16 @@ except ImportError as e:
 except Exception as e:
     print(f"[System] Hardware init error: {e}. Simulation mode ENABLED.")
 
+# Telegram config
+TELEGRAM_BOT_TOKEN = ''
+TELEGRAM_CHAT_ID = ''
+
+# Глобальный словарь для отслеживания состояния (кто где находится)
+# Ключ: name, Значение: 'HOME' или 'INSTITUTE'
+user_locations = {}
+# Ключ: name, Значение: фото base64 (для карты)
+user_avatars = {}
+
 def hardware_open_door():
     if HARDWARE_AVAILABLE:
         print(" [Hardware] Сигнал на GPIO 17 -> Реле щелкает. Турникет ОТКРЫТ.")
@@ -143,18 +153,17 @@ def hardware_read_temperature():
 
 def send_security_alert(image_b64):
     message = "⚠️ Внимание: Попытка несанкционированного доступа. Неизвестное лицо находилось перед камерой более 3 секунд."
-    if LINE_NOTIFY_TOKEN:
+    if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
         try:
-            url = "https://notify-api.line.me/api/notify"
-            headers = {'Authorization': f'Bearer {LINE_NOTIFY_TOKEN}'}
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
             image_data = base64.b64decode(image_b64.split(",")[1])
-            files = {'imageFile': ('alert.jpg', image_data, 'image/jpeg')}
-            data = {'message': message}
-            requests.post(url, headers=headers, data=data, files=files)
+            files = {'photo': ('alert.jpg', image_data, 'image/jpeg')}
+            data = {'chat_id': TELEGRAM_CHAT_ID, 'caption': message}
+            requests.post(url, data=data, files=files)
         except Exception as e:
             print(f" [Security Webhook] Ошибка: {e}")
     else:
-        print(" [Security Webhook] (Симуляция) Сообщение отправлено в LINE.")
+        print(" [Security Webhook] (Симуляция) Сообщение отправлено в мессенджер.")
 
 def load_database(db_path="database"):
     known_face_encodings = []
