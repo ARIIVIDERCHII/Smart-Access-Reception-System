@@ -23,10 +23,10 @@ DB_PATH = 'logs.db'
 # LINE Notify config
 LINE_NOTIFY_TOKEN = ''
 
-# Глобальный словарь для отслеживания состояния (кто где находится)
-# Ключ: name, Значение: 'HOME' или 'INSTITUTE'
+# Track user locations (HOME or INSTITUTE)
+# Key: name, Value: 'HOME' or 'INSTITUTE'
 user_locations = {}
-# Ключ: name, Значение: фото base64 (для карты)
+# Store user avatars (base64)
 user_avatars = {}
 
 def init_db():
@@ -74,7 +74,7 @@ try:
     engine.setProperty('rate', 150)
 except Exception:
     engine = None
-    print("[Voice] pyttsx3 не удалось инициализировать (espeak). Голос отключён.")
+    print("[Voice] pyttsx3 init failed (espeak). Voice disabled.")
 
 def speak(text):
     print(f"[Voice] {text}")
@@ -85,7 +85,7 @@ def speak(text):
         except Exception:
             pass
 
-# --- Настройки аппаратного обеспечения (Raspberry Pi) ---
+# --- Hardware Configuration (Raspberry Pi) ---
 HARDWARE_AVAILABLE = False
 try:
     import RPi.GPIO as GPIO
@@ -96,13 +96,13 @@ try:
     from PyMLX90614 import PyMLX90614
     HARDWARE_AVAILABLE = True
     
-    # Настройка пина для Реле (например, GPIO 17)
+    # Configure Relay pin (e.g., GPIO 17)
     RELAY_PIN = 17
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(RELAY_PIN, GPIO.OUT)
-    GPIO.output(RELAY_PIN, GPIO.LOW) # Изначально выключено
+    GPIO.output(RELAY_PIN, GPIO.LOW) # Initially off
     
-    # Настройка I2C для датчика температуры
+    # Configure I2C for temperature sensor
     bus = SMBus(1)
     sensor = PyMLX90614(bus, address=0x5A)
     print("[System] Hardware libraries loaded successfully. Real hardware mode ENABLED.")
@@ -115,36 +115,36 @@ except Exception as e:
 TELEGRAM_BOT_TOKEN = ''
 TELEGRAM_CHAT_ID = ''
 
-# Глобальный словарь для отслеживания состояния (кто где находится)
-# Ключ: name, Значение: 'HOME' или 'INSTITUTE'
+# Track user locations (HOME or INSTITUTE)
+# Key: name, Value: 'HOME' or 'INSTITUTE'
 user_locations = {}
-# Ключ: name, Значение: фото base64 (для карты)
+# Store user avatars (base64)
 user_avatars = {}
 
 def hardware_open_door():
     if HARDWARE_AVAILABLE:
-        print(" [Hardware] Сигнал на GPIO 17 -> Реле щелкает. Турникет ОТКРЫТ.")
+        print(" [Hardware] GPIO 17 HIGH -> Relay ON. Turnstile OPEN.")
         GPIO.output(RELAY_PIN, GPIO.HIGH)
         eventlet.sleep(5)
         GPIO.output(RELAY_PIN, GPIO.LOW)
-        print(" [Hardware] Сигнал на GPIO 17 -> Реле отключено. Турникет ЗАКРЫТ.")
+        print(" [Hardware] GPIO 17 LOW -> Relay OFF. Turnstile CLOSED.")
     else:
-        print(" [Simulation] Сигнал на GPIO -> Реле щелкает. Турникет ОТКРЫТ.")
+        print(" [Simulation] GPIO HIGH -> Relay ON. Turnstile OPEN.")
         eventlet.sleep(5)
-        print(" [Simulation] Сигнал на GPIO -> Реле отключено. Турникет ЗАКРЫТ.")
+        print(" [Simulation] GPIO LOW -> Relay OFF. Turnstile CLOSED.")
 
 def hardware_read_temperature():
     if HARDWARE_AVAILABLE:
-        print(" [Hardware] Считывание температуры (MLX90614)...")
+        print(" [Hardware] Reading temperature (MLX90614)...")
         try:
             temp = round(sensor.get_object_1(), 1)
-            print(f" [Hardware] Результат: {temp} °C")
+            print(f" [Hardware] Result: {temp} °C")
             return temp
         except Exception as e:
-            print(f" [Hardware] Ошибка чтения датчика: {e}")
+            print(f" [Hardware] Sensor read error: {e}")
             return 36.6
     else:
-        print(" [Simulation] Считывание температуры (MLX90614)...")
+        print(" [Simulation] Reading temperature (MLX90614)...")
         if random.random() < 0.1:
             temp = round(random.uniform(37.6, 38.5), 1)
         else:
@@ -152,7 +152,7 @@ def hardware_read_temperature():
         return temp
 
 def send_security_alert(image_b64):
-    message = "⚠️ Внимание: Попытка несанкционированного доступа. Неизвестное лицо находилось перед камерой более 3 секунд."
+    message = "⚠️ ALERT: Unauthorized access attempt. Unknown person detected at the entrance."
     if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
         try:
             url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
@@ -161,9 +161,9 @@ def send_security_alert(image_b64):
             data = {'chat_id': TELEGRAM_CHAT_ID, 'caption': message}
             requests.post(url, data=data, files=files)
         except Exception as e:
-            print(f" [Security Webhook] Ошибка: {e}")
+            print(f" [Security Webhook] Error: {e}")
     else:
-        print(" [Security Webhook] (Симуляция) Сообщение отправлено в мессенджер.")
+        print(" [Security Webhook] (Simulation) Message sent to messenger.")
 
 def load_database(db_path="database"):
     known_face_encodings = []
@@ -172,7 +172,7 @@ def load_database(db_path="database"):
     if not os.path.exists(db_path):
         return known_face_encodings, known_face_info
 
-    print("Загрузка базы данных лиц...")
+    print("Loading face database...")
     for filename in os.listdir(db_path):
         if filename.lower().endswith((".jpg", ".png", ".jpeg")):
             name_parts = os.path.splitext(filename)[0].split('_')
@@ -191,7 +191,7 @@ def load_database(db_path="database"):
                 
                 known_face_info.append({"name": name, "status": status, "image_b64": image_b64})
                 
-                # Инициализация для Campus Map
+                # Initialize for Campus Map
                 if name not in user_locations:
                     user_locations[name] = 'HOME'
                     user_avatars[name] = image_b64
@@ -281,7 +281,7 @@ def camera_loop():
                             speak(f"Access denied for {name}. High temperature detected.")
                             log_access(name, status, temp, False, "DENIED")
                         else:
-                            # Определение Entry/Exit
+                            # Determine Entry/Exit state
                             current_location = user_locations.get(name, 'HOME')
                             if current_location == 'HOME':
                                 action_type = 'ENTRY'
@@ -337,7 +337,7 @@ def camera_loop():
     video_capture.release()
     cv2.destroyAllWindows()
 
-# --- Socket API для инициализации карты ---
+# --- Socket API for Map State ---
 @socketio.on('request_map_state')
 def handle_map_state():
     state = []
